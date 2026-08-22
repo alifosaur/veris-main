@@ -96,6 +96,10 @@ export default function AssetGuardApp() {
 
   // --- Session persistence ---
   useEffect(() => {
+    if (!auth) {
+      setAuthLoading(false);
+      return;
+    }
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         await loadUserProfile(user.uid);
@@ -221,6 +225,10 @@ export default function AssetGuardApp() {
   // --- Auth submit ---
   const handleAuth = async (e: any) => {
     e.preventDefault();
+    if (!auth) {
+      setAuthError("Authentication is disabled. Firebase keys are not configured.");
+      return;
+    }
     setLoading(true);
     setAuthError("");
     const formData = new FormData(e.target);
@@ -265,6 +273,7 @@ export default function AssetGuardApp() {
 
   // --- Logout ---
   const handleLogout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       setView("login");
@@ -719,6 +728,16 @@ export default function AssetGuardApp() {
                   </svg>
                   <span className="text-3xl font-black tracking-tight font-sans">VERIS</span>
                 </div>
+                {!auth && (
+                  <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl text-left pointer-events-auto">
+                    <p className="text-[10px] font-bold text-amber-800 uppercase tracking-widest flex items-center gap-1.5">
+                      <AlertTriangle size={12} className="text-amber-800" /> API Configuration Required
+                    </p>
+                    <p className="text-[11px] text-slate-600 mt-1 leading-normal font-sans">
+                      Copy <code>.env.example</code> to <code>.env.local</code> in the <code>ckm-frontend/</code> folder and supply your Firebase keys.
+                    </p>
+                  </div>
+                )}
                 <form onSubmit={handleAuth} className="space-y-4 text-left">
                   <input name="email" type="email" placeholder="Enter your email" required className="w-full bg-[#F5FAFD] border border-[#D7E6ED] rounded-xl px-5 py-3.5 text-xs text-[#07152F] outline-none focus:border-[#2563EB] transition-all placeholder:text-slate-400 font-sans" />
                   <input name="password" type="password" placeholder="Enter your password" required className="w-full bg-[#F5FAFD] border border-[#D7E6ED] rounded-xl px-5 py-3.5 text-xs text-[#07152F] outline-none focus:border-[#2563EB] transition-all placeholder:text-slate-400 font-sans" />
@@ -761,6 +780,16 @@ export default function AssetGuardApp() {
                   <h2 className="text-3xl font-black text-[#07152F] tracking-tight">Create Creator Account</h2>
                   <p className="text-[#526174] mt-1 font-mono text-[9px] tracking-[0.2em] uppercase">Register Security Node</p>
                 </div>
+                {!auth && (
+                  <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl text-left pointer-events-auto">
+                    <p className="text-[10px] font-bold text-amber-800 uppercase tracking-widest flex items-center gap-1.5">
+                      <AlertTriangle size={12} className="text-amber-800" /> API Configuration Required
+                    </p>
+                    <p className="text-[11px] text-slate-600 mt-1 leading-normal font-sans">
+                      Copy <code>.env.example</code> to <code>.env.local</code> in the <code>ckm-frontend/</code> folder and supply your Firebase keys.
+                    </p>
+                  </div>
+                )}
                 <form onSubmit={handleAuth} className="space-y-6 font-sans">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-1">
@@ -1731,7 +1760,10 @@ function DashboardView({ galleryKey, onGenerateDmca, onTrackOnline }: { galleryK
 
   useEffect(() => {
     const fetchImages = async () => {
-      if (!auth.currentUser) return;
+      if (!auth || !auth.currentUser) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const q = query(

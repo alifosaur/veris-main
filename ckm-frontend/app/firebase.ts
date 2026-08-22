@@ -6,33 +6,38 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "firebase-api-key-placeholder",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "firebase-auth-domain-placeholder",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "firebase-project-id-placeholder",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "firebase-storage-bucket-placeholder",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "firebase-sender-id-placeholder",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "firebase-app-id-placeholder",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "firebase-measurement-id-placeholder"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
-  console.warn("Firebase environment variables are not set. Auth and DB connections will fail.");
+export const isFirebaseConfigured = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+let app: any = null;
+let auth: any = null;
+let db: any = null;
+let storage: any = null;
+
+if (isFirebaseConfigured) {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+  db = getFirestore(app);
+  storage = getStorage(app);
+} else {
+  console.warn("Firebase environment variables are not set. Auth and DB connections will remain null.");
 }
 
-// FIX 2: Prevent Next.js from initializing Firebase multiple times
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-
-export const storage = getStorage(app);
-
+export { auth, db, storage };
 
 // FIX 3: Safely initialize Analytics ONLY on the browser (client-side)
 let analytics;
-if (typeof window !== "undefined") {
+if (isFirebaseConfigured && typeof window !== "undefined") {
   isSupported().then((yes) => {
-    if (yes) {
+    if (yes && app) {
       analytics = getAnalytics(app);
     }
   });
