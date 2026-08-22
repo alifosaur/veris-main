@@ -1,0 +1,30 @@
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Next.js build and outputs
+.next/
+node_modules/
+
+# Python compiled cache and variables
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Databases and local persistence files
+*.sqlite3
+ckm_db/
+ckm_backend/ckm_db/
+
+# IDE configurations and system logs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

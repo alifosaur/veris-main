@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-arctic: #F5FAFD;
+  --surf-primary: #FFFFFF;
+  --surf-secondary: #EAF1F7;
+  --accent-primary: #2563EB;
+  --accent-secondary: #38B8D3;
+  --text-deep: #07152F;
+  --text-secondary: #526174;
+  --border-cool: #D7E6ED;
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-danger: #EF4444;
+  
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+body {
+  background-color: var(--bg-arctic);
+  color: var(--text-deep);
+  font-family: var(--font-sans);
+}
+
+.font-sans {
+  font-family: var(--font-sans) !important;
+}
+
+.font-technical, .font-mono {
+  font-family: var(--font-mono) !important;
+}

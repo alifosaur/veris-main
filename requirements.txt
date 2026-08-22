@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pillow
+numpy
+python-multipart
+reportlab
+requests
+chromadb
+google-genai
+opencv-python-headless
+PyWavelets
+imagehash
+transformers
+torch
+python-dotenv
