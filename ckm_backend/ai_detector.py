@@ -14,7 +14,7 @@ def get_pipe():
         print("Loading AI Detection Model (Swin Transformer) lazily...")
         try:
             from transformers import pipeline
-            _pipe_cache = pipeline("image-classification", model="Organika/sdxl-detector")
+            _pipe_cache = pipeline("image-classification", model="ongtrandong2/ai_vs_real_image_detection")
         except Exception as e:
             print(f"Warning: Could not load HuggingFace model. Error: {e}")
             _pipe_cache = None
@@ -29,11 +29,11 @@ def detect_ai(image_bytes: bytes):
         img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
         results = pipe(img)
         
-        # Format: [{'label': 'generated', 'score': 0.98}, {'label': 'human', 'score': 0.02}]
+        # Format: [{'label': 'FAKE', 'score': 0.90}, {'label': 'REAL', 'score': 0.10}]
         top_result = results[0]
         
         return {
-            "label": "AI Generated" if top_result['label'] == 'generated' else "Human Created",
+            "label": "AI Generated" if top_result['label'] == 'FAKE' else "Human Created",
             "confidence": round(top_result['score'] * 100, 2)
         }
     except Exception as e:
