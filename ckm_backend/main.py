@@ -5,16 +5,16 @@ from google import genai
 from google.genai import types
 import chromadb
 from dotenv import load_dotenv
-import forensics
-import ai_detector
-import advanced_watermark
+from . import forensics
+from . import ai_detector
+from . import advanced_watermark
 import base64
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas as pdf_canvas
 
 # --- NAYE ENGINES KE IMPORTS ---
-import metadata
-import advanced_fingerprint
+from . import metadata
+from . import advanced_fingerprint
 
 # 1. Load Secrets
 load_dotenv()
@@ -79,7 +79,6 @@ async def protect_asset(file: UploadFile = File(...), user_id: str = Form(None))
         contents = await file.read()
         
         # --- 1. APPLY INVISIBLE WATERMARK ---
-        import advanced_watermark
         import hashlib
         import datetime
         import secrets
@@ -175,7 +174,6 @@ async def scan_for_chori(file: UploadFile = File(...), user_id: str = Form(None)
                     candidate_bias = meta.get("bias", 0.0)
                     stored_user_id = meta.get("user_id", "")
                     if candidate_dna:
-                        import advanced_watermark
                         # Verify the watermark using the matched candidate's DNA and stored channel bias
                         watermark_detected = advanced_watermark.verify_watermark_match(
                             contents,
@@ -262,7 +260,6 @@ async def protect_bulk(files: list[UploadFile] = File(...), user_id: str = Form(
     results = []
     import asyncio
     import time
-    import advanced_watermark
     import hashlib
     import datetime
     import secrets
