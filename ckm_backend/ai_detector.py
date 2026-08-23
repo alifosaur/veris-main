@@ -1,4 +1,3 @@
-from transformers import pipeline
 from PIL import Image
 import io
 
@@ -14,6 +13,7 @@ def get_pipe():
     if _pipe_cache is None:
         print("Loading AI Detection Model (Swin Transformer) lazily...")
         try:
+            from transformers import pipeline
             _pipe_cache = pipeline("image-classification", model="Organika/sdxl-detector")
         except Exception as e:
             print(f"Warning: Could not load HuggingFace model. Error: {e}")
