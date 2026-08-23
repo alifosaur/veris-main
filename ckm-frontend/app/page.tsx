@@ -842,7 +842,8 @@ export default function AssetGuardApp() {
 
       {/* ===================== REDESIGNED AUTHENTICATED VAULT DASHBOARD ===================== */}
       {view === "dashboard" && (
-        <div className="flex h-screen w-full relative z-10 bg-[#F5FAFD]">\n          {/* MOBILE DRAWER OVERLAY */}
+        <div className="flex h-screen w-full relative z-10 bg-[#F5FAFD]">
+          {/* MOBILE DRAWER OVERLAY */}
           <AnimatePresence>
             {mobileMenuOpen && (
               <div className="fixed inset-0 z-50 flex md:hidden pointer-events-auto">
