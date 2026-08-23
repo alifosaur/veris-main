@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // --- FIREBASE ---
 import { auth, db } from "../firebase";
+import { API_BASE_URL } from "../config";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -334,7 +335,7 @@ export default function AssetGuardApp() {
     fd.append("dna_string", dmcaDna);
     
     try {
-      const res = await fetch("http://localhost:8000/generate-dmca", {
+      const res = await fetch(`${API_BASE_URL}/generate-dmca`, {
         method: "POST",
         body: fd
       });
@@ -402,7 +403,7 @@ export default function AssetGuardApp() {
     }
     
     try {
-      const res = await fetch("http://localhost:8000/protect-bulk", {
+      const res = await fetch(`${API_BASE_URL}/protect-bulk`, {
         method: "POST",
         body: fd
       });
@@ -509,7 +510,7 @@ export default function AssetGuardApp() {
       fd.append("user_id", auth.currentUser.uid);
     }
     try {
-      const res = await fetch("http://localhost:8000/protect", { method: "POST", body: fd });
+      const res = await fetch(`${API_BASE_URL}/protect`, { method: "POST", body: fd });
       const data = await res.json();
       setSealResult(data);
       clearInterval(interval);
@@ -592,7 +593,7 @@ export default function AssetGuardApp() {
       fd.append("user_id", auth.currentUser.uid);
     }
     try {
-      const res = await fetch("http://localhost:8000/scan", { method: "POST", body: fd });
+      const res = await fetch(`${API_BASE_URL}/scan`, { method: "POST", body: fd });
       const data = await res.json();
       const isClean = !data.is_flagged_stolen;
       setVerifyResult({ ...data, verified: isClean, localPreview: URL.createObjectURL(file) });
