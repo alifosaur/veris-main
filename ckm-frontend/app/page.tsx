@@ -740,8 +740,8 @@ export default function AssetGuardApp() {
                   </div>
                 )}
                 <form onSubmit={handleAuth} className="space-y-4 text-left">
-                  <input name="email" type="email" placeholder="Enter your email" required className="w-full bg-[#F5FAFD] border border-[#D7E6ED] rounded-xl px-5 py-3.5 text-xs text-[#07152F] outline-none focus:border-[#2563EB] transition-all placeholder:text-slate-400 font-sans" />
-                  <input name="password" type="password" placeholder="Enter your password" required className="w-full bg-[#F5FAFD] border border-[#D7E6ED] rounded-xl px-5 py-3.5 text-xs text-[#07152F] outline-none focus:border-[#2563EB] transition-all placeholder:text-slate-400 font-sans" />
+                  <input name="email" type="email" autoComplete="off" placeholder="Enter your email" required className="w-full bg-[#F5FAFD] border border-[#D7E6ED] rounded-xl px-5 py-3.5 text-xs text-[#07152F] outline-none focus:border-[#2563EB] transition-all placeholder:text-slate-400 font-sans" />
+                  <input name="password" type="password" autoComplete="off" placeholder="Enter your password" required className="w-full bg-[#F5FAFD] border border-[#D7E6ED] rounded-xl px-5 py-3.5 text-xs text-[#07152F] outline-none focus:border-[#2563EB] transition-all placeholder:text-slate-400 font-sans" />
                   <button type="submit" disabled={loading} className="w-full bg-[#2563EB] hover:opacity-95 text-white font-black py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-xs uppercase tracking-widest disabled:opacity-50">
                     {loading ? <><Loader2 size={16} className="animate-spin" /> INITIALIZING...</> : <>Access Vault <ArrowRight size={16} /></>}
                   </button>
