@@ -8,6 +8,10 @@ It combines **invisible watermarking, visual fingerprinting, image forensics, si
 
 > **Protect → Register → Scan → Verify**
 
+### Live Demo
+
+🔗 **[veris-red.vercel.app](https://veris-red.vercel.app/)**
+
 ---
 
 ## Why VERIS?
