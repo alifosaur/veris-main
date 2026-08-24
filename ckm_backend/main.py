@@ -353,61 +353,378 @@ async def generate_dmca(
         import io
         import base64
         import datetime
-        
-        buffer = io.BytesIO()
-        c = pdf_canvas.Canvas(buffer, pagesize=A4)
-        width, height = A4
-        
-        # Header (Cyber/Cyan Banner)
-        c.setFillColorRGB(0.07, 0.91, 0.91)
-        c.rect(0, height - 80, width, 80, fill=True, stroke=False)
-        c.setFillColorRGB(0.05, 0.05, 0.1)
-        c.setFont("Helvetica-Bold", 20)
-        c.drawString(40, height - 48, "VERIS — DMCA TAKEDOWN NOTICE")
-        
-        # Document Content
-        c.setFillColorRGB(0.1, 0.1, 0.1)
-        c.setFont("Helvetica", 11)
-        y = height - 120
-        
-        current_date_str = datetime.datetime.utcnow().strftime('%B %d, %Y')
-        
-        lines = [
-            f"Date of Notice: {current_date_str}",
-            "",
-            f"Rights Holder: {owner_name}",
-            f"Contact Email: {owner_email}",
-            "",
-            "IDENTIFICATION OF COPYRIGHTED WORK:",
-            f"  Original Filename: {file_name}",
-            f"  VERIS DNA Fingerprint: {dna_string}",
-            f"  Original Registration Date: {seal_timestamp}",
-            "",
-            "LOCATION OF INFRINGING MATERIAL:",
-            f"  Infringing URL: {infringing_url}",
-            "",
-            "STATEMENT OF GOOD FAITH:",
-            "  I have a good faith belief that use of the copyrighted material",
-            "  described above is not authorized by the copyright owner, its",
-            "  agent, or the law.",
-            "",
-            "STATEMENT OF ACCURACY:",
-            "  The information in this notification is accurate and I am the",
-            "  copyright owner or authorized to act on behalf of the owner.",
-            "",
-            "Digital Signature:",
-            f"  /s/ {owner_name}",
-            f"  Signed on: {current_date_str}"
-        ]
-        
-        for line in lines:
-            c.drawString(40, y, line)
-            y -= 18
-            if y < 60:
-                c.showPage()
-                y = height - 60
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, PageBreak
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.graphics.shapes import Drawing, Circle, Line
+        from reportlab.pdfgen import canvas as pdf_canvas
+
+        class NumberedCanvas(pdf_canvas.Canvas):
+            def __init__(self, *args, owner_name=None, owner_email=None, doc_ref=None, current_date_str=None, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.owner_name = owner_name or "Test Owner"
+                self.owner_email = owner_email or "owner@test.com"
+                self.doc_ref = doc_ref or "2026-VRS-8901"
+                self.current_date_str = current_date_str or "August 24, 2026"
+                self._saved_page_states = []
+
+            def showPage(self):
+                self._saved_page_states.append(dict(self.__dict__))
+                self._startPage()
+
+            def save(self):
+                num_pages = len(self._saved_page_states)
+                for state in self._saved_page_states:
+                    self.__dict__.update(state)
+                    self.draw_page_decorations(num_pages)
+                    super().showPage()
+                super().save()
+
+            def draw_page_decorations(self, total_pages):
+                self.setFont("Helvetica", 7)
+                self.setFillColor(colors.HexColor('#526174'))
                 
-        c.save()
+                # Left footer (2 lines)
+                self.drawString(40, 50, "VERIS™ SECURE IP")
+                self.drawString(40, 42, "ENFORCEMENT")
+                
+                # Center footer (2 lines)
+                self.drawCentredString(297.6, 50, "CONFIDENTIAL — COPYRIGHT ENFORCEMENT")
+                self.drawCentredString(297.6, 42, "DOCUMENTATION")
+                
+                # Right footer (1 line)
+                self.drawRightString(555, 45, f"PAGE {self._pageNumber} OF {total_pages}")
+                
+                if self._pageNumber == 1:
+                    # Letterhead left
+                    self.setFont("Helvetica-Bold", 22)
+                    self.setFillColor(colors.HexColor('#07152F'))
+                    self.drawString(40, 770, "V E R I S")
+                    
+                    self.setFont("Helvetica-Bold", 7)
+                    self.setFillColor(colors.HexColor('#526174'))
+                    self.drawString(40, 755, "DIGITAL CONTENT PROTECTION & V E R I F I C AT I O N")
+                    
+                    # Title right
+                    self.setFont("Helvetica-Bold", 10)
+                    self.setFillColor(colors.HexColor('#07152F'))
+                    self.drawRightString(555, 770, "DMCA COPYRIGHT INFRINGEMENT NOTICE")
+                    
+                    self.setFont("Helvetica", 8)
+                    self.setFillColor(colors.HexColor('#526174'))
+                    self.drawRightString(555, 755, f"DOCUMENT REF: {self.doc_ref}")
+                    
+                    # Divider
+                    self.setStrokeColor(colors.HexColor('#D7E6ED'))
+                    self.setLineWidth(0.5)
+                    self.line(40, 745, 555, 745)
+                    
+                    # Metadata block
+                    # date
+                    self.setFont("Helvetica-Bold", 8)
+                    self.setFillColor(colors.HexColor('#526174'))
+                    self.drawString(40, 725, "DATE:")
+                    self.setFont("Helvetica", 8.5)
+                    self.setFillColor(colors.HexColor('#07152F'))
+                    self.drawString(140, 725, self.current_date_str)
+                    
+                    # Case ID
+                    self.setFont("Helvetica-Bold", 8)
+                    self.setFillColor(colors.HexColor('#526174'))
+                    self.drawString(40, 705, "NOTICE / CASE ID:")
+                    self.setFont("Helvetica", 8.5)
+                    self.setFillColor(colors.HexColor('#07152F'))
+                    self.drawString(140, 705, self.doc_ref)
+                    
+                    # Subject
+                    self.setFont("Helvetica-Bold", 8)
+                    self.setFillColor(colors.HexColor('#526174'))
+                    self.drawString(40, 685, "SUBJECT:")
+                    self.setFont("Helvetica-Bold", 8.5)
+                    self.setFillColor(colors.HexColor('#07152F'))
+                    self.drawString(140, 685, "Formal Notification of Copyright Infringement")
+                    
+                    # Right column
+                    self.setFont("Helvetica-Bold", 8)
+                    self.setFillColor(colors.HexColor('#526174'))
+                    self.drawString(300, 725, "RIGHTS HOLDER:")
+                    self.setFont("Helvetica", 8.5)
+                    self.setFillColor(colors.HexColor('#07152F'))
+                    self.drawString(400, 725, self.owner_name)
+                    
+                    # Contact
+                    self.setFont("Helvetica-Bold", 8)
+                    self.setFillColor(colors.HexColor('#526174'))
+                    self.drawString(300, 705, "CONTACT:")
+                    self.setFont("Helvetica", 8.5)
+                    self.setFillColor(colors.HexColor('#07152F'))
+                    self.drawString(400, 705, self.owner_email)
+                    
+                    # Center title
+                    self.setFont("Helvetica-Bold", 14)
+                    self.setFillColor(colors.HexColor('#07152F'))
+                    self.drawCentredString(297.6, 640, "NOTICE OF COPYRIGHT INFRINGEMENT")
+
+        def make_section_header(title_text, section_header_style):
+            t = Table([[Paragraph(title_text, section_header_style)]], colWidths=[515])
+            t.setStyle(TableStyle([
+                ('LINEBELOW', (0,0), (-1,-1), 0.5, colors.HexColor('#D7E6ED')),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+                ('TOPPADDING', (0,0), (-1,-1), 12),
+                ('LEFTPADDING', (0,0), (-1,-1), 0),
+                ('RIGHTPADDING', (0,0), (-1,-1), 0),
+            ]))
+            return t
+
+        def make_key_value_table(rows_data, label_style, value_style):
+            table_data = []
+            for label, val in rows_data:
+                if isinstance(val, str):
+                    val_p = Paragraph(val, value_style)
+                else:
+                    val_p = val
+                table_data.append([
+                    Paragraph(label, label_style),
+                    val_p
+                ])
+            t = Table(table_data, colWidths=[150, 365])
+            t.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+                ('TOPPADDING', (0,0), (-1,-1), 6),
+                ('LEFTPADDING', (0,0), (-1,-1), 0),
+                ('RIGHTPADDING', (0,0), (-1,-1), 0),
+            ]))
+            return t
+
+        def make_fingerprint_box(dna, fingerprint_title_style, fingerprint_dna_style, fingerprint_caption_style):
+            d = Drawing(40, 40)
+            d.add(Circle(20, 20, 16, strokeColor=colors.HexColor('#2563EB'), strokeWidth=1.2, fillColor=None))
+            d.add(Line(20, 4, 20, 8, strokeColor=colors.HexColor('#2563EB'), strokeWidth=1))
+            d.add(Line(20, 32, 20, 36, strokeColor=colors.HexColor('#2563EB'), strokeWidth=1))
+            d.add(Line(4, 20, 8, 20, strokeColor=colors.HexColor('#2563EB'), strokeWidth=1))
+            d.add(Line(32, 20, 36, 20, strokeColor=colors.HexColor('#2563EB'), strokeWidth=1))
+            d.add(Line(20, 20, 20, 30, strokeColor=colors.HexColor('#2563EB'), strokeWidth=1.2))
+            d.add(Line(20, 20, 27, 16, strokeColor=colors.HexColor('#2563EB'), strokeWidth=1.2))
+            
+            dna_para = Paragraph(f"<font color='#07152F'>{dna}</font>", fingerprint_dna_style)
+            
+            text_content = [
+                Paragraph("VERIS CRYPTOGRAPHIC CONTENT FINGERPRINT", fingerprint_title_style),
+                Spacer(1, 4),
+                dna_para,
+                Spacer(1, 4),
+                Paragraph("VERIFIED EVIDENCE FRAGMENT · AUTOGENERATED · DO NOT ALTER", fingerprint_caption_style)
+            ]
+            
+            box_table = Table([[d, text_content]], colWidths=[50, 445])
+            box_table.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F8FAFC')),
+                ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#D7E6ED')),
+                ('PADDING', (0,0), (-1,-1), 10),
+                ('LEFTPADDING', (0,0), (-1,-1), 12),
+                ('RIGHTPADDING', (0,0), (-1,-1), 12),
+            ]))
+            return box_table
+
+        buffer = io.BytesIO()
+        current_date_str = datetime.datetime.utcnow().strftime('%B %d, %Y')
+        doc_ref = f"{datetime.datetime.utcnow().year}-VRS-{dna_string[-4:].upper()}"
+        
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            leftMargin=40,
+            rightMargin=40,
+            topMargin=40,
+            bottomMargin=80
+        )
+        
+        styles = getSampleStyleSheet()
+        
+        body_style = ParagraphStyle(
+            'DMCA_Body',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=9.5,
+            leading=14.5,
+            textColor=colors.HexColor('#07152F'),
+            spaceAfter=15
+        )
+        
+        section_header_style = ParagraphStyle(
+            'DMCA_SectionHeader',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=9,
+            leading=11,
+            textColor=colors.HexColor('#2563EB'),
+            spaceBefore=15,
+            spaceAfter=5
+        )
+        
+        label_style = ParagraphStyle(
+            'DMCA_Label',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=8,
+            leading=11,
+            textColor=colors.HexColor('#526174')
+        )
+        
+        value_style = ParagraphStyle(
+            'DMCA_Value',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=9,
+            leading=12,
+            textColor=colors.HexColor('#07152F')
+        )
+        
+        value_bold_style = ParagraphStyle(
+            'DMCA_ValueBold',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=9,
+            leading=12,
+            textColor=colors.HexColor('#07152F')
+        )
+        
+        fingerprint_title_style = ParagraphStyle(
+            'DMCA_FP_Title',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=7.5,
+            leading=10,
+            textColor=colors.HexColor('#2563EB')
+        )
+        
+        fingerprint_dna_style = ParagraphStyle(
+            'DMCA_FP_DNA',
+            parent=styles['Normal'],
+            fontName='Courier-Bold',
+            fontSize=9,
+            leading=12,
+            textColor=colors.HexColor('#07152F')
+        )
+        
+        fingerprint_caption_style = ParagraphStyle(
+            'DMCA_FP_Caption',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=6.5,
+            leading=8,
+            textColor=colors.HexColor('#94A3B8')
+        )
+        
+        story = []
+        
+        # 1. Spacer to clear first page header
+        story.append(Spacer(1, 230))
+        
+        # 2. Intro paragraph
+        intro_text = (
+            "This document serves as an official notification pursuant to the Digital Millennium Copyright Act "
+            "(17 U.S.C. § 512) and applicable international intellectual property laws. We are writing to notify you "
+            "that your service is hosting, transmitting, or otherwise providing access to material that infringes "
+            "upon the exclusive copyrights of the entity identified below."
+        )
+        story.append(Paragraph(intro_text, body_style))
+        
+        # 3. Section 1
+        story.append(make_section_header("1. IDENTIFICATION OF COPYRIGHT OWNER", section_header_style))
+        story.append(Spacer(1, 6))
+        owner_rows = [
+            ("RIGHTS HOLDER NAME:", owner_name),
+            ("ORGANIZATION:", "AssetGuard Solutions"),
+            ("CONTACT EMAIL:", owner_email),
+            ("AUTHORITY:", "Authorized Representative / Original Creator")
+        ]
+        story.append(make_key_value_table(owner_rows, label_style, value_style))
+        
+        # 4. Section 2
+        story.append(make_section_header("2. IDENTIFICATION OF COPYRIGHTED WORK", section_header_style))
+        story.append(Spacer(1, 6))
+        story.append(Paragraph("The following original, copyrighted work is the subject of this infringement notice:", body_style))
+        
+        work_title_p = Paragraph(f"<b>AssetGuard Protected Image: {file_name}</b>", value_bold_style)
+        work_rows = [
+            ("TITLE / DESCRIPTION:", work_title_p),
+            ("ORIGINAL WORK URL:", f"https://veris-main.onrender.com/vault/{dna_string}"),
+            ("REGISTRATION REF:", f"USCO-2026-VRS-{dna_string[-8:].upper()}")
+        ]
+        story.append(make_key_value_table(work_rows, label_style, value_style))
+        story.append(Spacer(1, 10))
+        story.append(make_fingerprint_box(dna_string, fingerprint_title_style, fingerprint_dna_style, fingerprint_caption_style))
+        
+        # 5. Page Break (Section 3 starts on page 2)
+        story.append(PageBreak())
+        
+        # 6. Section 3
+        story.append(make_section_header("3. IDENTIFICATION OF INFRINGING MATERIAL", section_header_style))
+        story.append(Spacer(1, 6))
+        story.append(Paragraph("The material identified below infringes upon the copyrighted work described in Section 2 and must be expeditiously removed or access to it disabled:", body_style))
+        
+        infringing_rows = [
+            ("INFRINGING URL(S):", infringing_url),
+            ("INFRINGEMENT DETAILS:", "Unauthorized duplication, hosting, and public distribution of the copyrighted image asset."),
+            ("DATE DETECTED:", current_date_str)
+        ]
+        story.append(make_key_value_table(infringing_rows, label_style, value_style))
+        
+        # 7. Section 4
+        story.append(make_section_header("4. GOOD-FAITH STATEMENT", section_header_style))
+        story.append(Spacer(1, 6))
+        story.append(Paragraph("I have a good faith belief that the use of the copyrighted materials described above as allegedly infringing is not authorized by the copyright owner, its agent, or the law.", body_style))
+        
+        # 8. Section 5
+        story.append(make_section_header("5. STATEMENT OF ACCURACY AND AUTHORITY", section_header_style))
+        story.append(Spacer(1, 6))
+        story.append(Paragraph("I swear, under penalty of perjury, that the information in this notification is accurate and that I am the copyright owner or am authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.", body_style))
+        
+        # 9. Section 6
+        story.append(make_section_header("6. REQUEST FOR EXPEDITIOUS REMOVAL", section_header_style))
+        story.append(Spacer(1, 6))
+        story.append(Paragraph("In light of the foregoing, we request that you immediately and expeditiously remove or disable access to the infringing material identified in Section 3, and notify us when this action has been completed. Please preserve all records associated with the infringing material for potential future legal proceedings.", body_style))
+        
+        story.append(Spacer(1, 15))
+        story.append(Paragraph("Respectfully submitted,", body_style))
+        story.append(Spacer(1, 15))
+        
+        # 10. Signature block (Keep Together)
+        sig_line = Table([[Paragraph("", body_style)]], colWidths=[200], rowHeights=[1], style=TableStyle([
+            ('LINEBELOW', (0,0), (-1,-1), 0.5, colors.HexColor('#000000')),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+            ('TOPPADDING', (0,0), (-1,-1), 0),
+            ('LEFTPADDING', (0,0), (-1,-1), 0),
+            ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ]))
+        
+        sig_elements = [
+            sig_line,
+            Spacer(1, 6),
+            Paragraph(f"<b>{owner_name}</b>", value_bold_style),
+            Paragraph("Authorized Representative", value_style),
+            Paragraph("AssetGuard Solutions · Secured by VERIS", value_style),
+            Paragraph(owner_email, value_style)
+        ]
+        story.append(KeepTogether(sig_elements))
+        
+        # Build Document using NumberedCanvas
+        doc.build(
+            story,
+            canvasmaker=lambda *args, **kwargs: NumberedCanvas(
+                *args,
+                owner_name=owner_name,
+                owner_email=owner_email,
+                doc_ref=doc_ref,
+                current_date_str=current_date_str,
+                **kwargs
+            )
+        )
+        
         buffer.seek(0)
         pdf_b64 = base64.b64encode(buffer.read()).decode()
         
