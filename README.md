@@ -118,39 +118,58 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="your_firebase_measurement_id"
 
 ---
 
-## Local Development & Setup
+## Setup & Deployment Guide
 
-### Prerequisites
-*   Node.js 18+ and npm
-*   Python 3.11+
-*   FastAPI & dependencies
+**External services:** Google Gemini API (embeddings), Firebase (auth + user data), ImgBB (sealed image hosting), ChromaDB (local vector store on the backend).
 
-### 1. Backend Setup
-1.  Navigate to the repository root.
-2.  Install python dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  Configure your root `.env` file with your `GEMINI_API_KEY`.
-4.  Start the backend service:
-    ```bash
-    uvicorn ckm_backend.main:app --reload --port 8000
-    ```
+---
 
-### 2. Frontend Setup
-1.  Navigate to the `ckm-frontend` folder:
-    ```bash
-    cd ckm-frontend
-    ```
-2.  Install node modules:
-    ```bash
-    npm install
-    ```
-3.  Configure your `.env.local` environment file using `.env.example`.
-4.  Run Next.js in development mode:
-    ```bash
-    npm run dev
-    ```
+### Local Setup
+
+#### Backend
+```bash
+# Navigate to the repository root (not inside ckm_backend/)
+pip install -r requirements.txt --break-system-packages
+
+# Create ckm_backend/.env with:
+# GEMINI_API_KEY=your_key_here
+
+# Start the backend reload service
+uvicorn ckm_backend.main:app --reload --port 8000
+```
+
+#### Frontend
+```bash
+cd ckm-frontend
+npm install
+
+# Create ckm-frontend/.env.local with:
+# NEXT_PUBLIC_FIREBASE_API_KEY=...
+# NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+# NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+# NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+# NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+# NEXT_PUBLIC_FIREBASE_APP_ID=...
+# NEXT_PUBLIC_IMGBB_API_KEY=...
+# NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+
+npm run dev
+```
+
+---
+
+### Deployment Notes
+
+*   **Render start command** must be `uvicorn ckm_backend.main:app --host 0.0.0.0 --port $PORT` (run from the repository root, not from inside `ckm_backend/`) — the package structure uses explicit relative imports which require running the server context from the workspace package boundary.
+*   **Never commit `.env` or `.env.local`** — both files are gitignored. Secrets belong only in Render's/Vercel's environment variable dashboards.
+*   **Secrets Split Scope**: Frontend and backend secrets are split by scope: `NEXT_PUBLIC_*` variables belong in **Vercel**; `GEMINI_API_KEY` belongs in **Render** only — never the reverse.
+
+---
+
+### Security Notes
+
+*   API keys are rotated and never hardcoded; the backend raises a startup error if `GEMINI_API_KEY` is missing rather than falling back to placeholders.
+*   The `/scan` endpoint never fabricates a match — a "verified" or "likely" result always requires a real vector similarity score and/or a real watermark extraction check against stored data.
 
 ---
 
