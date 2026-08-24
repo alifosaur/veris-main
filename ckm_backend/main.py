@@ -6,7 +6,6 @@ from google.genai import types
 import chromadb
 from dotenv import load_dotenv
 from . import forensics
-from . import ai_detector
 from . import advanced_watermark
 import base64
 from reportlab.lib.pagesizes import A4
@@ -135,11 +134,10 @@ async def scan_for_chori(file: UploadFile = File(...), user_id: str = Form(None)
     try:
         contents = await file.read()
         
-        # --- THE 4 FORENSIC ENGINES ---
+        # --- THE 3 FORENSIC ENGINES ---
         meta_report = metadata.analyze(contents)                     # 1. EXIF
         hash_report = advanced_fingerprint.generate_hashes(contents) # 2. Perceptual Hashes
         forensic_report = forensics.analyze_forensics(contents)      # 3. ELA & Noise
-        ai_report = ai_detector.detect_ai(contents)                  # 4. Swin Transformer
         
         # --- GEMINI VAULT CHECK (WITH RETRY AND BACKOFF) ---
         query_vector = await get_embeddings_with_retry(contents, file.content_type)
@@ -222,7 +220,6 @@ async def scan_for_chori(file: UploadFile = File(...), user_id: str = Form(None)
         authenticity_score = 100
         if meta_report.get("is_suspicous"): authenticity_score -= 15
         if forensic_report.get("risk") == "High": authenticity_score -= 20
-        if ai_report.get("label") == "AI Generated": authenticity_score -= 50
         if is_flagged_stolen: authenticity_score = 0
 
         # UI Payload
@@ -240,8 +237,7 @@ async def scan_for_chori(file: UploadFile = File(...), user_id: str = Form(None)
             "forensics": {
                 "metadata": meta_report,
                 "hashes": hash_report,
-                "image_analysis": forensic_report,
-                "ai_detection": ai_report
+                "image_analysis": forensic_report
             }
         }
 
