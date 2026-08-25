@@ -85,6 +85,13 @@ Original Image
 
 `Vercel` · `Render`
 
+### Ports
+
+| Service | URL |
+|---|---|
+| Frontend | `http://localhost:3000` |
+| Backend  | `http://localhost:8000` |
+
 ---
 
 ## Project Structure
